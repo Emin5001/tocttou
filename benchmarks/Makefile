@@ -40,8 +40,33 @@ writev_times:
 
 hunspell_cow:
 	mkdir -p bin
-	gcc hunspell/hunspell_cow.cc -O2 -o hunspell_cow -Wno-int-conversion -Wno-incompatible-pointer-types
+	g++ hunspell/hunspell_cow.cc -O2 -o hunspell_cow -Wno-int-conversion -Wno-incompatible-pointer-types
 	mv ./hunspell_cow bin
+
+hunspell_no_copy:
+	mkdir -p bin
+	g++ hunspell/hunspell_no_copy.cc -O2 -o hunspell_no_copy -std=c++14 -Wno-int-conversion -Wno-incompatible-pointer-types
+	mv ./hunspell_no_copy bin
+
+hunspell_copy:
+	mkdir -p bin
+	g++ hunspell/hunspell_copy.cc -O2 -o hunspell_copy -std=c++14 -Wno-int-conversion -Wno-incompatible-pointer-types
+	mv hunspell_copy bin
+
+hunspell_cow_time:
+	mkdir -p bin
+	g++ hunspell/hunspell_cow_benchmark_timer.cc -O2 -std=c++14 -o hunspell_cow_time -Wno-int-conversion -Wno-incompatible-pointer-types
+	mv ./hunspell_cow_time bin
+
+hunspell_copy_time:
+	mkdir -p bin
+	g++ hunspell/hunspell_copy_benchmark_timer.cc -O2 -std=c++14 -o hunspell_copy_time -Wno-int-conversion -Wno-incompatible-pointer-types
+	mv ./hunspell_copy_time bin
+
+hunspell_no_copy_time:
+	mkdir -p bin
+	g++ hunspell/hunspell_no_copy_benchmark_timer.cc -O2 -std=c++14 -o hunspell_no_copy_time -Wno-int-conversion -Wno-incompatible-pointer-types
+	mv ./hunspell_no_copy_time bin
 
 sendmsg_cow:
 	mkdir -p bin

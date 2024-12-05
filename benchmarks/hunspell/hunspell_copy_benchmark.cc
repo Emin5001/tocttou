@@ -3,20 +3,15 @@
 #include <cstring>
 #include <iostream> 
 
-inline std::unique_ptr<char[]> copy_and_verify_range_helper(std::size_t count, char* source_str) 
+inline std::unique_ptr<char[]> copy_and_verify_range_helper(std::size_t count, const char* source_str) 
 {
   auto target = std::make_unique<char[]>(count);
-  // instead of copying it over just do bounds verification
-  auto str_len = std::strlen(source_str);
-  for (int i = 0; i < str_len; i++) 
-  {
-    target[i] = source_str[i];
-  }
+  // dont copy, just return.
 
   return target;
 }
 
-static std::unique_ptr<char[]> __attribute__((noinline)) copy_and_verify_string(char* source_str)
+static auto __attribute__((noinline)) copy_and_verify_string(const char* source_str)
 {
   if (!source_str)
   {
@@ -38,9 +33,18 @@ static std::unique_ptr<char[]> __attribute__((noinline)) copy_and_verify_string(
 
 int main()
 {
-  char* source_str = "hello, world";
+  std::string long_str(4097, 'a');
 
-  auto copied_string = copy_and_verify_string(source_str);
+  //warmup
+  for (int i = 0; i < 10000; i++)
+  {
+    auto copied_string = copy_and_verify_string(long_str.c_str());
+  }
+  
+  for (int i = 0; i < 100000; i++)
+  {
+    auto copied_string = copy_and_verify_string(long_str.c_str());
+  }
 
   return 0;
 }

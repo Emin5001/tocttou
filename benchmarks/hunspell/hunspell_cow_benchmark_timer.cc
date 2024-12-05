@@ -2,6 +2,7 @@
 #include <memory>
 #include <cstring>
 #include <iostream>
+#include <time.h>
 
 #include "../../../PTEditor/ptedit_header.h"
 #define KERNEL_LAND (void *)0xffffffff80000000
@@ -9,7 +10,7 @@
 #define PAGE_ALIGN(ptr, page_size) (void *)(((uintptr_t)ptr) & ~(page_size - 1))
 
 
-inline std::unique_ptr<char[]> copy_and_verify_range_helper(std::size_t count, char* source_str) 
+inline std::unique_ptr<char[]> copy_and_verify_range_helper(std::size_t count, const char* source_str) 
 {
   auto target = std::unique_ptr<char[]>(count);
   // instead of copying it over just do bounds verification
@@ -22,7 +23,7 @@ inline std::unique_ptr<char[]> copy_and_verify_range_helper(std::size_t count, c
   return target;
 }
 
-static auto __attribute__((noinline)) copy_and_verify_string(char* source_str)
+static auto __attribute__((noinline)) copy_and_verify_string(const char* source_str)
 {
   if (!source_str)
   {
@@ -67,15 +68,35 @@ int main()
     exit(1);
   }
 
-  char* source_str = "hello, world";
-  auto copied_string = copy_and_verify_string(source_str);
-  if (copied_string == std::unique_ptr<char[]>(nullptr))
+  std::string source_str(4097, 'a');
+  struct timespec start, end;
+  // warmup
+  clock_gettime(CLOCK_MONOTONIC, &start);
+  for (int i = 0; i < 10000; i++)
   {
-    std::cout << "error, out of bounds" << std::endl;
-  } else 
-  {
-    std::cout << "nice\n";  
+    auto copied_string = copy_and_verify_string(source_str.c_str());
+    if (copied_string == std::unique_ptr<char[]>(nullptr))
+    {
+      std::cout << "error, out of bounds" << std::endl;
+    } 
   }
+  clock_gettime(CLOCK_MONOTONIC, &end);
+
+
+  clock_gettime(CLOCK_MONOTONIC, &start);
+  for (int i = 0; i < 100000; i++)
+  {
+    auto copied_string = copy_and_verify_string(source_str.c_str());
+    if (copied_string == std::unique_ptr<char[]>(nullptr))
+    {
+      std::cout << "error, out of bounds" << std::endl;
+    } 
+  }
+  clock_gettime(CLOCK_MONOTONIC, &end);
+  
+  double elapsed_time = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+
+  std::cout << "Elapsed time: " << elapsed_time << " seconds\n";
 
   ptedit_cleanup();
 
