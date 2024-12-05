@@ -1,0 +1,43 @@
+Samples: 81  of event 'cycles:P', Event count (approx.): 42859444
+Overhead  Command  Shared Object      Symbol
+  12.35%  cow      [kernel.kallsyms]  [k] find_next_iomem_res                  ◆
+   8.92%  cow      [kernel.kallsyms]  [k] entry_SYSCALL_64_after_hwframe       ▒
+   5.19%  cow      [kernel.kallsyms]  [k] syscall_return_via_sysret            ▒
+   3.86%  cow      [kernel.kallsyms]  [k] __call_rcu_common                    ▒
+   3.81%  cow      [kernel.kallsyms]  [k] __memcg_slab_free_hook               ▒
+   3.08%  cow      [kernel.kallsyms]  [k] syscall_exit_to_user_mode            ▒
+   2.89%  cow      [kernel.kallsyms]  [k] perf_event_mmap_output               ▒
+   2.83%  cow      [kernel.kallsyms]  [k] mas_wr_modify                        ▒
+   2.70%  cow      [kernel.kallsyms]  [k] __rcu_read_unlock                    ▒
+   2.56%  cow      [kernel.kallsyms]  [k] _raw_spin_unlock                     ▒
+   2.54%  cow      [kernel.kallsyms]  [k] memset_orig                          ▒
+   2.54%  cow      [kernel.kallsyms]  [k] perf_event_mmap_event                ▒
+   2.54%  cow      [kernel.kallsyms]  [k] mas_wr_node_store                    ▒
+   2.19%  cow      [kernel.kallsyms]  [k] vm_stat_account                      ▒
+   2.10%  cow      [kernel.kallsyms]  [k] up_write                             ▒
+   1.85%  cow      [kernel.kallsyms]  [k] kfree                                ▒
+   1.73%  cow      [kernel.kallsyms]  [k] mas_mab_cp                           ▒
+   1.54%  cow      [kernel.kallsyms]  [k] kmalloc_trace                        ▒
+   1.31%  cow      [kernel.kallsyms]  [k] rcu_pending                          ▒
+   1.30%  cow      [kernel.kallsyms]  [k] anon_vma_name                        ▒
+   1.29%  cow      [kernel.kallsyms]  [k] mas_prev_slot                        ▒
+
+
+
+ Performance counter stats for './cow':
+
+             17.78 msec task-clock                       #    1.128 CPUs utilized             
+                 1      context-switches                 #   56.246 /sec                      
+                 0      cpu-migrations                   #    0.000 /sec                      
+                53      page-faults                      #    2.981 K/sec                     
+        38,987,045      cycles                           #    2.193 GHz                       
+        39,264,761      instructions                     #    1.01  insn per cycle            
+         7,755,792      branches                         #  436.232 M/sec                     
+            62,298      branch-misses                    #    0.80% of all branches           
+
+       0.015755850 seconds time elapsed
+
+       0.005785000 seconds user
+       0.012534000 seconds sys
+
+

@@ -1,0 +1,45 @@
+Samples: 9  of event 'cycles:P', Event count (approx.): 1869305
+Overhead  Command  Shared Object         Symbol
+  49.59%  no_copy  ld-linux-x86-64.so.2  [.] _dl_relocate_object
+  41.91%  no_copy  [kernel.kallsyms]     [k] ___slab_alloc
+   7.79%  no_copy  [kernel.kallsyms]     [k] arch_pick_mmap_layout
+   0.64%  perf-ex  [kernel.kallsyms]     [k] end_repeat_nmi
+   0.06%  perf-ex  [kernel.kallsyms]     [k] native_write_msr
+
+
+
+ Performance counter stats for './no_copy':
+
+              0.76 msec task-clock                       #    0.159 CPUs utilized             
+                 0      context-switches                 #    0.000 /sec                      
+                 0      cpu-migrations                   #    0.000 /sec                      
+                53      page-faults                      #   69.302 K/sec                     
+         1,660,888      cycles                           #    2.172 GHz                       
+         1,634,371      instructions                     #    0.98  insn per cycle            
+           269,692      branches                         #  352.646 M/sec                     
+             7,330      branch-misses                    #    2.72% of all branches           
+
+       0.004818280 seconds time elapsed
+
+       0.000000000 seconds user
+       0.001356000 seconds sys
+
+
+for size 1000 iovec buffer:
+
+
+ Performance counter stats for './no_copy':
+
+              0.68 msec task-clock                       #  203.760 CPUs utilized             
+                 0      context-switches                 #    0.000 /sec                      
+                 0      cpu-migrations                   #    0.000 /sec                      
+                55      page-faults                      #   80.455 K/sec                     
+         1,482,680      cycles                           #    2.169 GHz                       
+         1,634,261      instructions                     #    1.10  insn per cycle            
+           268,979      branches                         #  393.465 M/sec                     
+             6,714      branch-misses                    #    2.50% of all branches           
+
+       0.000003355 seconds time elapsed
+
+       0.000000000 seconds user
+       0.000000000 seconds sys

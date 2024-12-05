@@ -1,0 +1,35 @@
+Samples: 77  of event 'cycles:P', Event count (approx.): 41060363
+Overhead  Command  Shared Object      Symbol
+  27.68%  copy     [kernel.kallsyms]  [k] entry_SYSRETQ_unsafe_stack
+  25.95%  copy     [kernel.kallsyms]  [k] syscall_return_via_sysret
+  18.10%  copy     [kernel.kallsyms]  [k] entry_SYSCALL_64_after_hwframe
+  12.58%  copy     [kernel.kallsyms]  [k] entry_SYSCALL_64
+   5.56%  copy     libc.so.6          [.] pthread_sigmask@GLIBC_2.2.5
+   2.65%  copy     [kernel.kallsyms]  [k] syscall_exit_to_user_mode
+   2.58%  copy     libc.so.6          [.] __wcsnlen_ifunc
+   1.88%  copy     [kernel.kallsyms]  [k] security_current_getlsmblob_subj
+   1.33%  copy     [kernel.kallsyms]  [k] __x64_sys_rt_sigprocmask
+   1.33%  copy     [kernel.kallsyms]  [k] _copy_to_user
+   0.32%  copy     [kernel.kallsyms]  [k] apparmor_bprm_committed_creds
+   0.03%  perf-ex  [kernel.kallsyms]  [k] end_repeat_nmi
+   0.00%  perf-ex  [kernel.kallsyms]  [k] native_write_msr
+
+
+
+ Performance counter stats for './copy':
+
+             18.67 msec task-clock                       #    0.815 CPUs utilized             
+                 0      context-switches                 #    0.000 /sec                      
+                 0      cpu-migrations                   #    0.000 /sec                      
+                52      page-faults                      #    2.786 K/sec                     
+        40,951,267      cycles                           #    2.194 GHz                       
+        10,764,160      instructions                     #    0.26  insn per cycle            
+         1,886,478      branches                         #  101.063 M/sec                     
+             9,895      branch-misses                    #    0.52% of all branches           
+
+       0.022900940 seconds time elapsed
+
+       0.011165000 seconds user
+       0.008120000 seconds sys
+
+
