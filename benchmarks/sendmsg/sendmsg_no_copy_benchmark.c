@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <stdatomic.h>
 #include <string.h>
+#include <assert.h>
 #include "../../include/read_write.h"
 
 sigjmp_buf jmpbuf;
@@ -257,11 +258,13 @@ static long __attribute__ ((noinline)) sys_sendmsg(struct user_msghdr *msg, unsi
   return _sys_sendmsg(msg, &msg_sys, flags, NULL, 0);
 }
 
-int main()
-{
-  vecs = calloc (1000 * sizeof(struct iovec), sizeof(struct iovec));
+int main(int argc, char *argv[]) {
 
-  for (int i = 0; i < 1000; i++)
+	assert(argc == 2 && "Must include a size for the iovec buffer.");
+	int size = atoi(argv[1]);
+  vecs = calloc (size * sizeof(struct iovec), sizeof(struct iovec));
+
+  for (int i = 0; i < size; i++)
   {
     vecs[i].iov_base = 0xdeadbeef;
     vecs[i].iov_len = 4096;
@@ -269,7 +272,7 @@ int main()
 
   memset(&msg, 0, sizeof(msg));
   msg.msg_iov = vecs;
-  msg.msg_iovlen = NUM_IOVS;
+  msg.msg_iovlen = size;
 
   for (int i = 0; i < 100000; i++)
   {

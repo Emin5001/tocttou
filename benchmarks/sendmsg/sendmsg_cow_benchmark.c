@@ -7,8 +7,9 @@
 #include <unistd.h>
 #include <stdatomic.h>
 #include <string.h>
-#include "../include/read_write.h"
-#include "../../PTEditor/pteditor_header.h"
+#include <assert.h>
+#include "../../include/read_write.h"
+#include "../../../PTEditor/ptedit_header.h"
 
 sigjmp_buf jmpbuf;
 
@@ -23,7 +24,6 @@ void segfault_handler(int signal)
     if (signal == SIGSEGV) 
     {
         fprintf(stderr, "Segmentation fault (signal %d) occurred!\n", signal);
-        fail ++;
     }
 }
 
@@ -111,6 +111,13 @@ struct iovec *iovec_from_user(const struct iovec *uvec, unsigned long nr_segs, u
 	}
 
 	return iov;
+}
+
+struct iovec *get_iovec_addr(struct iovec *iov_addr, void **writeable_addresses, uintptr_t first_page) {
+	uintptr_t base = PAGE_ALIGN(iov_addr, 4096);
+	int index = (base - first_page) / 4096;
+	struct iovec *translated_iov_addr = (uintptr_t)writeable_addresses[index] + (uintptr_t)PAGE_OFFSET(iov_addr, 4096);
+	return translated_iov_addr;
 }
 
 ssize_t __attribute__ ((noinline)) import_iovec(int type, const struct iovec *uvec,
@@ -272,7 +279,7 @@ static int copy_msghdr_from_user(struct msghdr *kmsg, struct user_msghdr *umsg, 
 
   err = __copy_msghdr(kmsg, &msg, save_addr);
 	void *writeable_addresses[5];
-  err = import_iovec(save_addr ? ITER_DEST : ITER_SOURCE, msg.msg_iov, msg.msg_iovlen, UIO_FASTIOV, &iov, &kmsg->msg_iter, &writeable_addresses);
+  err = import_iovec(save_addr ? ITER_DEST : ITER_SOURCE, umsg->msg_iov, umsg->msg_iovlen, UIO_FASTIOV, &iov, &kmsg->msg_iter, &writeable_addresses);
 
   //checking if attack is successful
   struct iovec *iovec_ptr = iov;
@@ -281,8 +288,8 @@ static int copy_msghdr_from_user(struct msghdr *kmsg, struct user_msghdr *umsg, 
     return -2;
   };
 
-	uintptr_t first_page = (uintptr_t) PAGE_ALIGN(vec, 4096);
-	uintptr_t last_page = (uintptr_t) PAGE_ALIGN((char*) vec + (vlen * sizeof(struct iovec)), 4096);
+	uintptr_t first_page = (uintptr_t) PAGE_ALIGN(umsg->msg_iov, 4096);
+	uintptr_t last_page = (uintptr_t) PAGE_ALIGN((char*) umsg->msg_iov + (umsg->msg_iovlen * sizeof(struct iovec)), 4096);
 
 	for (uintptr_t addr = first_page; addr <= last_page; addr += 4096)
 	{
@@ -302,49 +309,49 @@ int sendmsg_copy_msghdr(struct msghdr *msg, struct user_msghdr *umsg, unsigned f
   return err;
 }
 
-int __copy_msghdr(struct msghdr *kmsg, struct user_msghdr *msg, struct sockaddr **save_addr)
-{
-	ssize_t err;
+// int __copy_msghdr(struct msghdr *kmsg, struct user_msghdr *msg, struct sockaddr **save_addr)
+// {
+// 	ssize_t err;
 
-	kmsg->msg_control_is_user = true;
-	kmsg->msg_get_inq = 0;
-	kmsg->msg_control_user = msg->msg_control;
-	kmsg->msg_controllen = msg->msg_controllen;
-	kmsg->msg_flags = msg->msg_flags;
+// 	kmsg->msg_control_is_user = true;
+// 	kmsg->msg_get_inq = 0;
+// 	kmsg->msg_control_user = msg->msg_control;
+// 	kmsg->msg_controllen = msg->msg_controllen;
+// 	kmsg->msg_flags = msg->msg_flags;
 
-	kmsg->msg_namelen = msg->msg_namelen;
-	if (!msg->msg_name)
-		kmsg->msg_namelen = 0;
+// 	kmsg->msg_namelen = msg->msg_namelen;
+// 	if (!msg->msg_name)
+// 		kmsg->msg_namelen = 0;
 
-	if (kmsg->msg_namelen < 0)
-		return -EINVAL;
+// 	if (kmsg->msg_namelen < 0)
+// 		return -EINVAL;
 
-	if (kmsg->msg_namelen > sizeof(struct sockaddr_storage))
-		kmsg->msg_namelen = sizeof(struct sockaddr_storage);
+// 	if (kmsg->msg_namelen > sizeof(struct sockaddr_storage))
+// 		kmsg->msg_namelen = sizeof(struct sockaddr_storage);
 
-	if (save_addr)
-		*save_addr = msg->msg_name;
+// 	if (save_addr)
+// 		*save_addr = msg->msg_name;
 
-	if (msg->msg_name && kmsg->msg_namelen) {
-		if (!save_addr) {
-			err = move_addr_to_kernel(msg->msg_name,
-						  kmsg->msg_namelen,
-						  kmsg->msg_name);
-			if (err < 0)
-				return err;
-		}
-	} else {
-		kmsg->msg_name = NULL;
-		kmsg->msg_namelen = 0;
-	}
+// 	if (msg->msg_name && kmsg->msg_namelen) {
+// 		if (!save_addr) {
+// 			err = move_addr_to_kernel(msg->msg_name,
+// 						  kmsg->msg_namelen,
+// 						  kmsg->msg_name);
+// 			if (err < 0)
+// 				return err;
+// 		}
+// 	} else {
+// 		kmsg->msg_name = NULL;
+// 		kmsg->msg_namelen = 0;
+// 	}
 
-	if (msg->msg_iovlen > UIO_MAXIOV)
-		return -EMSGSIZE;
+// 	if (msg->msg_iovlen > UIO_MAXIOV)
+// 		return -EMSGSIZE;
 
-	kmsg->msg_iocb = NULL;
-	kmsg->msg_ubuf = NULL;
-	return 0;
-}
+// 	kmsg->msg_iocb = NULL;
+// 	kmsg->msg_ubuf = NULL;
+// 	return 0;
+// }
 
 
 static int _sys_sendmsg(struct user_msghdr *msg, struct msghdr *msg_sys, unsigned int flags, struct used_address *used_address, unsigned int allowed_msghdr_flags)
@@ -369,17 +376,19 @@ static long __attribute__ ((noinline)) sys_sendmsg(struct user_msghdr *msg, unsi
   return _sys_sendmsg(msg, &msg_sys, flags, NULL, 0);
 }
 
-int main()
-{
-  if (ptedit_init())
-  {
-    printf("could not initialize ptedit (did you load the kernel module?)\n");
-    return 1;
-  }
+int main(int argc, char *argv[]) {
 
-  vecs = calloc (1000 * sizeof(struct iovec), sizeof(struct iovec));
+	if (ptedit_init()) {
+        printf("Could not initialize ptedit (did you load the kernel module?)\n");
+        return 1;
+    }
 
-  for (int i = 0; i < 1000; i++)
+	assert(argc == 2 && "Must include a size for the iovec buffer.");
+	int size = atoi(argv[1]);
+
+  vecs = calloc (size * sizeof(struct iovec), sizeof(struct iovec));
+
+  for (int i = 0; i < size; i++)
   {
     vecs[i].iov_base = 0xdeadbeef;
     vecs[i].iov_len = 4096;
@@ -387,7 +396,7 @@ int main()
 
   memset(&msg, 0, sizeof(msg));
   msg.msg_iov = vecs;
-  msg.msg_iovlen = NUM_IOVS;
+  msg.msg_iovlen = size;
 
   for (int i = 0; i < 100000; i++)
   {
